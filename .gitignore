@@ -174,4 +174,5 @@ cython_debug/
 
 .DS_Store
 .marimo
+__marimo__
 test/

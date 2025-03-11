@@ -1,11 +1,11 @@
 import marimo
 
-__generated_with = "0.8.14"
+__generated_with = "0.11.17"
 app = marimo.App(width="full")
 
 
 @app.cell
-def __():
+def _():
     import marimo as mo
     import numpy as np
     import matplotlib.pyplot as plt
@@ -15,7 +15,7 @@ def __():
 
 
 @app.cell
-def __(np):
+def _(np):
     np.random.seed(42)
 
     N = 100
@@ -58,22 +58,17 @@ def __(np):
 
 
 @app.cell
-def __(mo):
+def _(mo):
     theta_slider = mo.ui.slider(0, 180, value=0, label="Rotation Angle (θ in degrees)")
-    eigen_checkbox = mo.ui.checkbox(value=True, label="Display Eigenvectors")
+    eigen_checkbox = mo.ui.checkbox(value=False, label="Display Eigenvectors")
     projection_checkbox = mo.ui.checkbox(value=True, label="Display Projection")
-    original_checkbox = mo.ui.checkbox(value=True, label="Display Original Data")
+    original_checkbox = mo.ui.checkbox(value=False, label="Display Original Data")
     mo.hstack([theta_slider, eigen_checkbox, projection_checkbox, original_checkbox], justify="start", align="start")
-    return (
-        eigen_checkbox,
-        original_checkbox,
-        projection_checkbox,
-        theta_slider,
-    )
+    return eigen_checkbox, original_checkbox, projection_checkbox, theta_slider
 
 
 @app.cell
-def __(X, np, theta_slider):
+def _(X, np, theta_slider):
     theta = np.radians(theta_slider.value)
     b = np.array([np.cos(theta), np.sin(theta)])
     assert np.isclose(np.dot(b,b), 1)
@@ -85,7 +80,7 @@ def __(X, np, theta_slider):
 
 
 @app.cell
-def __(
+def _(
     N,
     SSE,
     V,
@@ -160,22 +155,22 @@ def __(
 
 
 @app.cell
-def __():
+def _():
     return
 
 
 @app.cell
-def __():
+def _():
     return
 
 
 @app.cell
-def __():
+def _():
     return
 
 
 @app.cell
-def __():
+def _():
     return
 
 

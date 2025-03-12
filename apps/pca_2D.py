@@ -59,12 +59,11 @@ def _(np):
 
 @app.cell
 def _(mo):
-    theta_slider = mo.ui.slider(0, 180, value=0, label="Rotation Angle (θ in degrees)")
+    theta_slider = mo.ui.slider(0, 180, value=90, label="Rotation Angle (θ in degrees)")
     eigen_checkbox = mo.ui.checkbox(value=False, label="Display Eigenvectors")
     projection_checkbox = mo.ui.checkbox(value=True, label="Display Projection")
-    original_checkbox = mo.ui.checkbox(value=False, label="Display Original Data")
-    mo.hstack([theta_slider, eigen_checkbox, projection_checkbox, original_checkbox], justify="start", align="start")
-    return eigen_checkbox, original_checkbox, projection_checkbox, theta_slider
+    mo.hstack([theta_slider, eigen_checkbox, projection_checkbox], justify="start", align="start")
+    return eigen_checkbox, projection_checkbox, theta_slider
 
 
 @app.cell
@@ -74,9 +73,10 @@ def _(X, np, theta_slider):
     assert np.isclose(np.dot(b,b), 1)
     Z = np.dot(X, b)
     X_hat = np.outer(Z, b)
+    X_res = X - X_hat
     V = np.round(np.dot(Z.T, Z), 2)
     SSE = np.round(np.sum((X - X_hat)**2))
-    return SSE, V, X_hat, Z, b, theta
+    return SSE, V, X_hat, X_res, Z, b, theta
 
 
 @app.cell
@@ -86,29 +86,23 @@ def _(
     V,
     X,
     X_hat,
+    X_res,
     Z,
     b,
     eigen_checkbox,
     eigenval,
     first_eigenvec,
     np,
-    original_checkbox,
     plt,
     projection_checkbox,
     second_eigenvec,
 ):
     # Plot the samples
-    fig, axes = plt.subplots(1, 3, figsize=(15, 5))
+    fig, axes = plt.subplots(1, 4, figsize=(20, 5))
 
     delta = 0.5
     x_lim = (-3.5, 3.5)
     y_lim = (-3.5, 3.5)
-
-    if eigen_checkbox.value:
-        axes[0].quiver(0, 0, first_eigenvec[0]*eigenval[0], first_eigenvec[1]*eigenval[0], width=0.015,
-                       angles='xy', scale_units='xy', scale=0.5, color='purple', label="First Eigenvector")
-        axes[0].quiver(0, 0, second_eigenvec[0]*eigenval[1], second_eigenvec[1]*eigenval[1], width=0.015,
-                       angles='xy', scale_units='xy', scale=0.5, color='purple', label="Second Eigenvector")
 
     axes[0].scatter(X[:, 0], X[:, 1], alpha=0.5)
     axes[0].set_xlabel("X1")
@@ -122,19 +116,19 @@ def _(
     axes[0].quiver(0, 0, b[0]*2, b[1]*2,  angles='xy', scale_units='xy', width=0.015,
                    scale=1, color='red', label="Rotating Vector")
 
+    if eigen_checkbox.value:
+        axes[0].quiver(0, 0, first_eigenvec[0]*eigenval[0], first_eigenvec[1]*eigenval[0], width=0.018,
+                       angles='xy', scale_units='xy', scale=0.3, color='purple', label="First Eigenvector")
+        axes[0].quiver(0, 0, second_eigenvec[0]*eigenval[1], second_eigenvec[1]*eigenval[1], width=0.018,
+                       angles='xy', scale_units='xy', scale=0.3, color='purple', label="Second Eigenvector")
+
     axes[1].scatter(Z, np.repeat(0, N), alpha=0.5)
-    axes[1].set_title(f"Projected Data $Z = X b$ | V= {V}")
+    axes[1].set_title(f"Compressed Data $Z = X b$ | V= {V}")
     axes[1].set_ylim((-1e-1, 1e-1))
     axes[1].set_xlim((-4, 4))
     axes[1].set_yticks([0]) 
     axes[1].set_yticklabels([]) 
     axes[1].set_xlabel("PC 1")
-
-    if original_checkbox.value:
-        axes[2].scatter(X[:, 0], X[:, 1], alpha=0.50)
-        axes[2].set_xlabel("X1")
-        axes[2].set_ylabel("X2")
-        axes[2].quiver(0, 0, b[0]*2, b[1]*2,  angles='xy', scale_units='xy', scale=1, color='red', label="Rotating Vector", alpha=0.50)
 
     axes[2].scatter(X_hat[:, 0], X_hat[:, 1], alpha=0.50)
     axes[2].set_xlabel("X1")
@@ -144,11 +138,16 @@ def _(
     X_hat_string = "$\hat{X} = Z b^T$"
     axes[2].set_title(rf"Reconstructed Data {X_hat_string} | SSE = {SSE}")
 
+    axes[3].scatter(X_res[:, 0], X_res[:, 1], alpha=0.50)
+    axes[3].set_xlabel("X1")
+    axes[3].set_ylabel("X2")
+    axes[3].set_xlim(x_lim)
+    axes[3].set_ylim(y_lim)
+    axes[3].set_title("Residual Data $X - \hat{X}$")
+
     if projection_checkbox.value:
         for i in range(len(X)):
             axes[0].plot([X[i, 0], X_hat[i, 0]], [X[i, 1], X_hat[i, 1]], alpha=0.5, linewidth=1.5, c="grey")
-            if original_checkbox.value:
-                axes[2].plot([X[i, 0], X_hat[i, 0]], [X[i, 1], X_hat[i, 1]], alpha=0.5, linewidth=1.5, c="grey")
 
     fig
     return X_hat_string, axes, delta, fig, i, x_lim, y_lim

@@ -28,8 +28,8 @@ jobs:
 
       - name: 📦 Install dependencies
         run: |
-          uv pip install marimo
-          uv pip install 
+          uv pip install marimo numpy matplotlib seaborn
+          pip install torch
 
       - name: 🛠️ Export notebooks
         run: |

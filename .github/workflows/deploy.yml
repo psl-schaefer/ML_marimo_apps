@@ -29,7 +29,7 @@ jobs:
       - name: 📦 Install dependencies
         run: |
           uv pip install marimo numpy matplotlib seaborn
-          pip install torch
+          pip install torch --index-url https://download.pytorch.org/whl/cpu
 
       - name: 🛠️ Export notebooks
         run: |
